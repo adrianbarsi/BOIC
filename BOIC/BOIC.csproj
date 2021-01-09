@@ -49,6 +49,8 @@
     <Compile Include="Code\Components\IZone.cs" />
     <Compile Include="Code\Components\IConsumable.cs" />
     <Compile Include="Code\Components\IDestroyable.cs" />
+    <Compile Include="Code\Direction.cs" />
+    <Compile Include="Code\Door.cs" />
     <Compile Include="Code\Flyer.cs" />
     <Compile Include="Code\Follower.cs" />
     <Compile Include="Code\Components\IDecoration.cs" />
@@ -81,6 +83,9 @@
     </Reference>
     <Reference Include="MonoGame.Extended.Input, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MonoGame.Extended.Input.3.8.0\lib\netstandard2.0\MonoGame.Extended.Input.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoGame.Extended.Particles, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MonoGame.Extended.Particles.3.8.0\lib\netstandard2.0\MonoGame.Extended.Particles.dll</HintPath>
     </Reference>
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\Windows\MonoGame.Framework.dll</HintPath>

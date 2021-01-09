@@ -13,14 +13,6 @@ namespace BOIC.Code
 {
     public class Player : IEntity
     {
-        public enum Direction
-        {
-            Up,
-            Down,
-            Left,
-            Right
-        }
-
         private const int PROJECTILE_OFFSET = 10;
         private const int INVINCIBILITY_TIME = 2;
         private const float SHOOTING_COOLDOWN_TIME = 1f;
@@ -30,7 +22,7 @@ namespace BOIC.Code
 
         private Vector2 verticalSpeed = new Vector2(0, 4);
         private Vector2 horizontalSpeed = new Vector2(4, 0);
-        private int hearts = 3;
+        private int hearts = 10;
         public int Hearts { get => hearts; }
         private bool invincible = false;
         private float currentTime = 0;

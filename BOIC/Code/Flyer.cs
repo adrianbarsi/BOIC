@@ -53,7 +53,7 @@ namespace BOIC.Code
             Bounds.Position += velocity;
             if(Bounds.Position.X > BOIC.MAP_WIDTH)
             {
-                Bounds.Position = new Vector2(-texture.Width, random.Next(0, BOIC.MAP_HEIGHT - texture.Height - room.Game.HeartOffset));
+                Bounds.Position = new Vector2(-texture.Width, random.Next(room.Game.HeartOffset, BOIC.MAP_HEIGHT - texture.Height - room.Game.HeartOffset));
             }
             if (Hp <= 0)
             {

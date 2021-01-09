@@ -19,7 +19,10 @@ namespace BOIC.Code
 
         private const int HEART_GAP = 20;
 
+        private const int DOOR_WIDTH = 60;
+
         private GraphicsDeviceManager graphics;
+        public GraphicsDeviceManager Graphics { get => graphics; }
         private SpriteBatch spriteBatch;
 
         private Player player;
@@ -35,6 +38,10 @@ namespace BOIC.Code
         private int currentHeartY;
 
         private Room room;
+        private Door topDoor;
+        private Door bottomDoor;
+        private Door leftDoor;
+        private Door rightDoor;
 
         public BOIC()
         {
@@ -55,37 +62,9 @@ namespace BOIC.Code
             }
         }
 
-        protected override void Initialize()
+
+        private void initializeRoomComponents(List<IEntity> entities, List<IProp> props, List<IDecoration> decorations, List<IZone> zones, CollisionComponent collisionComponent)
         {
-            base.Initialize();
-
-            graphics.PreferredBackBufferWidth = MAP_WIDTH;
-            graphics.PreferredBackBufferHeight = MAP_HEIGHT;
-            graphics.ApplyChanges();
-
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            var heartTexture = Content.Load<Texture2D>("images/heart");
-            var potionTexture = Content.Load<Texture2D>("images/potion");
-            var flyerTexture = Content.Load<Texture2D>("images/rightArrow");
-
-            textures = new Textures(heartTexture, potionTexture, flyerTexture);
-            heartOffset = textures.HeartTexture.Width + HEART_GAP;
-
-            var entities = new List<IEntity>();
-            var props = new List<IProp>();
-            var decorations = new List<IDecoration>();
-            var zones = new List<IZone>();
-            var collisionComponent = new CollisionComponent(new RectangleF(0, 0, MAP_WIDTH, MAP_HEIGHT));
-
-            room = new Room(this, player, entities, props, decorations, zones, collisionComponent);
-
-            player = new Player(room, new RectangleF(200, 200, 50, 50));
-            entities.Add(player);
-            collisionComponent.Insert(player);
-
-            initializeHearts(player.Hearts);
-
             Follower follower = new Follower(room, new CircleF(new Point2(100, 100), 25));
             entities.Add(follower);
             collisionComponent.Insert(follower);
@@ -120,6 +99,50 @@ namespace BOIC.Code
             collisionComponent.Insert(bottomBoundary);
         }
 
+        public void changeRoom(Direction direction)
+        {
+            Console.WriteLine(direction);
+        }
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+
+            graphics.PreferredBackBufferWidth = MAP_WIDTH;
+            graphics.PreferredBackBufferHeight = MAP_HEIGHT;
+            graphics.ApplyChanges();
+
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            var heartTexture = Content.Load<Texture2D>("images/heart");
+            var potionTexture = Content.Load<Texture2D>("images/potion");
+            var flyerTexture = Content.Load<Texture2D>("images/rightArrow");
+
+            textures = new Textures(heartTexture, potionTexture, flyerTexture);
+            heartOffset = textures.HeartTexture.Width + HEART_GAP;
+
+            var entities = new List<IEntity>();
+            var props = new List<IProp>();
+            var decorations = new List<IDecoration>();
+            var zones = new List<IZone>();
+            var collisionComponent = new CollisionComponent(new RectangleF(0, 0, MAP_WIDTH, MAP_HEIGHT));
+
+            room = new Room(this, player, entities, props, decorations, zones, collisionComponent);
+
+            player = new Player(room, new RectangleF(200, 200, 50, 50));
+            entities.Add(player);
+            collisionComponent.Insert(player);
+
+            initializeHearts(player.Hearts);
+
+            initializeRoomComponents(entities, props, decorations, zones, collisionComponent);
+
+            topDoor = new Door(this, new RectangleF(new Point2(MAP_WIDTH / 2, WALL_OFFSET / 2), new Size2(DOOR_WIDTH, WALL_OFFSET)), Direction.Up);
+            bottomDoor = new Door(this, new RectangleF(new Point2(MAP_WIDTH / 2, MAP_HEIGHT - (WALL_OFFSET / 2)), new Size2(DOOR_WIDTH, WALL_OFFSET)), Direction.Down);
+            leftDoor = new Door(this, new RectangleF(new Point2(WALL_OFFSET / 2, MAP_HEIGHT / 2), new Size2(DOOR_WIDTH, WALL_OFFSET)), Direction.Left);
+            rightDoor = new Door(this, new RectangleF(new Point2(MAP_WIDTH - (WALL_OFFSET / 2), MAP_HEIGHT / 2), new Size2(DOOR_WIDTH, WALL_OFFSET)), Direction.Right);
+        }
+
         private void updateHearts()
         {
             if(player.Hearts > 0)
@@ -149,7 +172,15 @@ namespace BOIC.Code
             room.Update(gameTime);
             updateHearts();
 
-            if(player.Hearts <= 0)
+            if(room.Complete)
+            {
+                topDoor.Update(gameTime);
+                bottomDoor.Update(gameTime);
+                leftDoor.Update(gameTime);
+                rightDoor.Update(gameTime);
+            }
+
+            if (player.Hearts <= 0)
             {
                 Exit();
             }
@@ -169,6 +200,15 @@ namespace BOIC.Code
                 {
                     heart.Draw(spriteBatch);
                 }
+
+                if (room.Complete)
+                {
+                    topDoor.Draw(spriteBatch);
+                    bottomDoor.Draw(spriteBatch);
+                    leftDoor.Draw(spriteBatch);
+                    rightDoor.Draw(spriteBatch);
+                }
+                
 
             spriteBatch.End();
 

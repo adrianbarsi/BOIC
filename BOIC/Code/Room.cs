@@ -21,6 +21,8 @@ namespace BOIC.Code
         private List<IDecoration> decorations = new();
         private List<IZone> zones = new();
         private CollisionComponent collisionComponent;
+        private bool complete = false;
+        public bool Complete { get => complete; }
 
         public Room(BOIC game, Player player, List<IEntity> entities, List<IProp> props, List<IDecoration> decorations, List<IZone> zones, CollisionComponent collisionComponent)
         {
@@ -33,7 +35,7 @@ namespace BOIC.Code
             this.collisionComponent = collisionComponent;
         }
 
-        public void generateProjectile(Vector2 position, Player.Direction direction)
+        public void generateProjectile(Vector2 position, Direction direction)
         {
             PlayerProjectile pj = new PlayerProjectile(position, direction);
             props.Add(pj);
@@ -58,6 +60,7 @@ namespace BOIC.Code
 
         public void Update(GameTime gameTime)
         {
+            int enemyCount = 0;
             for (int i = 0; i < entities.Count; i++)
             {
                 if (entities[i] is IDestroyable && ((IDestroyable)entities[i]).Destroy)
@@ -79,7 +82,15 @@ namespace BOIC.Code
                     i--;
                     continue;
                 }
+                if(entities[i] is IEnemy)
+                {
+                    enemyCount++;
+                }
                 entities[i].Update(gameTime);
+            }
+            if(enemyCount == 0)
+            {
+                complete = true;
             }
 
             for (int i = 0; i < props.Count; i++)
