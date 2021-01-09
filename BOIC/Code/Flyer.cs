@@ -13,11 +13,12 @@ namespace BOIC.Code
 {
     public class Flyer : IEntity, IEnemy, IDestroyable
     {
-        private BOIC game;
+        private Room room;
         public IShapeF Bounds { get; }
         public bool Destroy { get; set; } = false;
         public int Hp { get; set; } = 3;
         public int CollisionDamage { get; set; } = 1;
+        public float PotionDropProbability { get; set; }
 
         private Texture2D texture;
         private Rectangle srcRect;
@@ -25,12 +26,13 @@ namespace BOIC.Code
         private Vector2 velocity = new Vector2(4, 0);
         private Random random = new Random();
 
-        public Flyer(BOIC game, IShapeF bounds, Texture2D texture)
+        public Flyer(Room room, IShapeF bounds, Texture2D texture)
         {
-            this.game = game;
+            this.room = room;
             Bounds = bounds;
             this.texture = texture;
             this.srcRect = new Rectangle(0, 0, texture.Width, texture.Height);
+            PotionDropProbability = 0.4f;
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -51,7 +53,7 @@ namespace BOIC.Code
             Bounds.Position += velocity;
             if(Bounds.Position.X > BOIC.MAP_WIDTH)
             {
-                Bounds.Position = new Vector2(-texture.Width, random.Next(0, BOIC.MAP_HEIGHT - texture.Height - game.HeartOffset));
+                Bounds.Position = new Vector2(-texture.Width, random.Next(0, BOIC.MAP_HEIGHT - texture.Height - room.Game.HeartOffset));
             }
             if (Hp <= 0)
             {

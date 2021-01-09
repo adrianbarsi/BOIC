@@ -25,7 +25,7 @@ namespace BOIC.Code
         private const int INVINCIBILITY_TIME = 2;
         private const float SHOOTING_COOLDOWN_TIME = 1f;
 
-        private readonly BOIC game;
+        private readonly Room room;
         public IShapeF Bounds { get; }
 
         private Vector2 verticalSpeed = new Vector2(0, 4);
@@ -38,9 +38,9 @@ namespace BOIC.Code
         private bool shootingCooldown = false;
         private float timeOfShooting = 0;
 
-        public Player(BOIC game, RectangleF rectangleF)
+        public Player(Room room, RectangleF rectangleF)
         {
-            this.game = game;
+            this.room = room;
             Bounds = rectangleF;
         }
 
@@ -86,19 +86,19 @@ namespace BOIC.Code
                 RectangleF r = (RectangleF)Bounds;
                 if (keyboardState.IsKeyDown(Keys.Up))
                 {
-                    game.generateProjectile(new Vector2(r.X + (r.Width / 2), r.Y - PROJECTILE_OFFSET), Direction.Up);
+                    room.generateProjectile(new Vector2(r.X + (r.Width / 2), r.Y - PROJECTILE_OFFSET), Direction.Up);
                 }
                 else if (keyboardState.IsKeyDown(Keys.Down))
                 {
-                    game.generateProjectile(new Vector2(r.X + (r.Width / 2), r.Y + r.Height + PROJECTILE_OFFSET + 5), Direction.Down);
+                    room.generateProjectile(new Vector2(r.X + (r.Width / 2), r.Y + r.Height + PROJECTILE_OFFSET + 5), Direction.Down);
                 }
                 else if (keyboardState.IsKeyDown(Keys.Left))
                 {
-                    game.generateProjectile(new Vector2(r.X - PROJECTILE_OFFSET, r.Y + (r.Height / 2)), Direction.Left);
+                    room.generateProjectile(new Vector2(r.X - PROJECTILE_OFFSET, r.Y + (r.Height / 2)), Direction.Left);
                 }
                 else if (keyboardState.IsKeyDown(Keys.Right))
                 {
-                    game.generateProjectile(new Vector2(r.X + r.Width + PROJECTILE_OFFSET, r.Y + (r.Height / 2)), Direction.Right);
+                    room.generateProjectile(new Vector2(r.X + r.Width + PROJECTILE_OFFSET, r.Y + (r.Height / 2)), Direction.Right);
                 }
                 shootingCooldown = true;
                 timeOfShooting = currentTime;
@@ -130,19 +130,6 @@ namespace BOIC.Code
             {
                 Bounds.Position -= collisionInfo.PenetrationVector;
             }
-            /*
-            else if (collisionInfo.Other is IZone || collisionInfo.Other.Bounds is CircleF)
-            {
-                Bounds.Position -= collisionInfo.PenetrationVector;
-            }
-            else if(collisionInfo.Other.Bounds is RectangleF)
-            {
-                else
-                {
-                    Bounds.Position -= collisionInfo.PenetrationVector;
-                }
-            }
-            */
         }
     }
 }

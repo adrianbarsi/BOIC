@@ -59,6 +59,8 @@
     <Compile Include="Code\Components\IEntity.cs" />
     <Compile Include="Code\PlayerProjectile.cs" />
     <Compile Include="Code\Potion.cs" />
+    <Compile Include="Code\Room.cs" />
+    <Compile Include="Code\Textures.cs" />
     <Compile Include="Code\Utility\CooldownTimer.cs" />
     <Compile Include="Code\Wall.cs" />
     <Compile Include="Program.cs" />

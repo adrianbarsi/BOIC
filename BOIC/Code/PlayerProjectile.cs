@@ -16,9 +16,8 @@ namespace BOIC.Code
     public class PlayerProjectile : IProp, IDestroyable
     {
         private const int PROJECTILE_RADIUS = 10;
-        private const int SPEED = 4;
+        private const int SPEED = 5;
 
-        private BOIC game;
         private Vector2 position;
         private Direction direction;
         public IShapeF Bounds { get; }
@@ -29,9 +28,8 @@ namespace BOIC.Code
         public int Damage { get => damage; }
 
 
-        public PlayerProjectile(BOIC game, Vector2 position, Direction direction)
+        public PlayerProjectile(Vector2 position, Direction direction)
         {
-            this.game = game;
             this.position = position;
             this.direction = direction;
 
@@ -40,19 +38,19 @@ namespace BOIC.Code
             switch (direction)
             {
                 case Direction.Up:
-                    velocity = new Vector2(0, -4);
+                    velocity = new Vector2(0, -SPEED);
                     adjustedPoint = new Point2(position.X, position.Y - PROJECTILE_RADIUS);
                     break;
                 case Direction.Down:
-                    velocity = new Vector2(0, 4);
+                    velocity = new Vector2(0, SPEED);
                     adjustedPoint = new Point2(position.X, position.Y + PROJECTILE_RADIUS);
                     break;
                 case Direction.Left:
-                    velocity = new Vector2(-4, 0);
+                    velocity = new Vector2(-SPEED, 0);
                     adjustedPoint = new Point2(position.X - PROJECTILE_RADIUS, position.Y);
                     break;
                 case Direction.Right:
-                    velocity = new Vector2(4, 0);
+                    velocity = new Vector2(SPEED, 0);
                     adjustedPoint = new Point2(position.X + PROJECTILE_RADIUS, position.Y);
                     break;
             }

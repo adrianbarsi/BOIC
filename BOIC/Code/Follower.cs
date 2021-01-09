@@ -16,7 +16,7 @@ namespace BOIC.Code
         public const float POTION_DROP_PROBABILITY = 1;
 
         private const float INVINCIBILITY_TIME = 0.5f;
-        private readonly BOIC game;
+        private readonly Room room;
         public IShapeF Bounds { get; }
         private Vector2 speed = new Vector2(1, 1);
         private Vector2 velocity;
@@ -27,11 +27,13 @@ namespace BOIC.Code
 
         public bool Destroy { get; set; }
         public int CollisionDamage { get; set; } = 1;
+        public float PotionDropProbability { get; set; }
 
-        public Follower(BOIC game, CircleF circleF)
+        public Follower(Room room, CircleF circleF)
         {
-            this.game = game;
+            this.room = room;
             Bounds = circleF;
+            PotionDropProbability = 0.5f;
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -45,8 +47,8 @@ namespace BOIC.Code
 
             Vector2 delta = new Vector2
             {
-                X = game.Player.Bounds.Position.X - Bounds.Position.X,
-                Y = game.Player.Bounds.Position.Y - Bounds.Position.Y
+                X = room.Game.Player.Bounds.Position.X - Bounds.Position.X,
+                Y = room.Game.Player.Bounds.Position.Y - Bounds.Position.Y
             };
 
             delta.Normalize();

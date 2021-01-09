@@ -10,9 +10,6 @@ using System.Collections.Generic;
 
 namespace BOIC.Code
 {
-    /// <summary>
-    /// This is the main type for your game.
-    /// </summary>
     public class BOIC : Game
     {
         public const int MAP_WIDTH = 800;
@@ -25,46 +22,37 @@ namespace BOIC.Code
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
 
-        public readonly List<IEntity> entities = new();
-        public readonly List<IProp> props = new();
-        public readonly List<IDecoration> decorations = new();
-        public readonly List<IZone> zones = new();
-        public readonly CollisionComponent collisionComponent;
-
         private Player player;
-        private int heartCount = 0;
 
         public Player Player { get => player; }
 
-        private Texture2D heartTexture;
-        private Texture2D potionTexture;
-        private Texture2D flyerTexture;
+        private Textures textures;
+        public Textures Textures { get => textures; }
+        private List<Heart> hearts = new();
         private int heartOffset;
         public int HeartOffset { get => heartOffset; }
         private int currentHeartX;
         private int currentHeartY;
 
+        private Room room;
+
         public BOIC()
         {
             graphics = new GraphicsDeviceManager(this);
-            collisionComponent = new CollisionComponent(new RectangleF(0, 0, MAP_WIDTH, MAP_HEIGHT));
 
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
 
-        public List<Heart> initializeHearts(int numHearts)
+        public void initializeHearts(int numHearts)
         {
-            var hearts = new List<Heart>();
-
             currentHeartX = HEART_GAP;
             currentHeartY = MAP_HEIGHT - heartOffset;
             for (int i = 0; i < numHearts; i++)
             {
-                hearts.Add(new Heart(this, new Vector2(currentHeartX, currentHeartY), heartTexture));
+                hearts.Add(new Heart(this, new Vector2(currentHeartX, currentHeartY), textures.HeartTexture));
                 currentHeartX += heartOffset;
             }
-            return hearts;
         }
 
         protected override void Initialize()
@@ -77,34 +65,41 @@ namespace BOIC.Code
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            player = new Player(this, new RectangleF(200, 200, 50, 50));
+            var heartTexture = Content.Load<Texture2D>("images/heart");
+            var potionTexture = Content.Load<Texture2D>("images/potion");
+            var flyerTexture = Content.Load<Texture2D>("images/rightArrow");
+
+            textures = new Textures(heartTexture, potionTexture, flyerTexture);
+            heartOffset = textures.HeartTexture.Width + HEART_GAP;
+
+            var entities = new List<IEntity>();
+            var props = new List<IProp>();
+            var decorations = new List<IDecoration>();
+            var zones = new List<IZone>();
+            var collisionComponent = new CollisionComponent(new RectangleF(0, 0, MAP_WIDTH, MAP_HEIGHT));
+
+            room = new Room(this, player, entities, props, decorations, zones, collisionComponent);
+
+            player = new Player(room, new RectangleF(200, 200, 50, 50));
             entities.Add(player);
             collisionComponent.Insert(player);
 
-            heartTexture = Content.Load<Texture2D>("images/heart");
-            potionTexture = Content.Load<Texture2D>("images/potion");
-            flyerTexture = Content.Load<Texture2D>("images/rightArrow");
+            initializeHearts(player.Hearts);
 
-            heartOffset = heartTexture.Width + HEART_GAP;
-
-            List<Heart> hearts = initializeHearts(player.Hearts);
-            heartCount = hearts.Count;
-            decorations.AddRange(hearts);
-
-            Follower follower = new Follower(this, new CircleF(new Point2(100, 100), 25));
+            Follower follower = new Follower(room, new CircleF(new Point2(100, 100), 25));
             entities.Add(follower);
             collisionComponent.Insert(follower);
 
-            follower = new Follower(this, new CircleF(new Point2(400, 400), 25));
+            follower = new Follower(room, new CircleF(new Point2(400, 400), 25));
             entities.Add(follower);
             collisionComponent.Insert(follower);
 
-            follower = new Follower(this, new CircleF(new Point2(700, 700), 25));
+            follower = new Follower(room, new CircleF(new Point2(700, 700), 25));
             entities.Add(follower);
             collisionComponent.Insert(follower);
 
-            RectangleF bounds = new RectangleF(new Point2(0, MAP_HEIGHT / 2), new Size2(flyerTexture.Width, flyerTexture.Height));
-            Flyer flyer = new Flyer(this, bounds, flyerTexture);
+            RectangleF bounds = new RectangleF(new Point2(0, MAP_HEIGHT / 2), new Size2(textures.FlyerTexture.Width, textures.FlyerTexture.Height));
+            Flyer flyer = new Flyer(room, bounds, textures.FlyerTexture);
             entities.Add(flyer);
             collisionComponent.Insert(flyer);
 
@@ -123,34 +118,27 @@ namespace BOIC.Code
             var bottomBoundary = new MapBoundary(new RectangleF(new(WALL_OFFSET, MAP_HEIGHT - WALL_OFFSET), new(MAP_WIDTH - 2 * WALL_OFFSET, WALL_OFFSET)));
             zones.Add(bottomBoundary);
             collisionComponent.Insert(bottomBoundary);
-
-            //Wall newWall = new(new(500, 100), new(600, 100), new RectangleF(new(500, 100), new(100, 7)));
-            //props.Add(newWall);
-            //collisionComponent.Insert(newWall);
         }
 
-        public void destroyProjectile(PlayerProjectile pj)
+        private void updateHearts()
         {
-            for (int i = 0; i < props.Count; i++)
+            if(player.Hearts > 0)
             {
-                if (ReferenceEquals(pj, props[i]))
+                if (player.Hearts < hearts.Count)
                 {
-                    props.RemoveAt(i);
+                    hearts.RemoveAt(hearts.Count - 1);
+                    currentHeartX -= heartOffset;
+                }
+                else if (player.Hearts > hearts.Count)
+                {
+                    hearts.Add(new Heart(this, new Vector2(currentHeartX, currentHeartY), textures.HeartTexture));
+                    currentHeartX += heartOffset;
                 }
             }
-            collisionComponent.Remove(pj);
-        }
-
-        public void generateProjectile(Vector2 position, Player.Direction direction)
-        {
-            PlayerProjectile pj = new PlayerProjectile(this, position, direction);
-            props.Add(pj);
-            collisionComponent.Insert(pj);
-        }
-
-        private bool didItDrop(float probability)
-        {
-            return new Random().NextDouble() <= probability;
+            else
+            {
+                Exit();
+            }
         }
 
         protected override void Update(GameTime gameTime)
@@ -158,78 +146,13 @@ namespace BOIC.Code
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            for (int i = 0; i < entities.Count; i++)
-            {
-                if (entities[i] is IDestroyable && ((IDestroyable)entities[i]).Destroy)
-                {
-                    ICollisionActor ca = entities[i];
+            room.Update(gameTime);
+            updateHearts();
 
-                    if (ca is Follower && didItDrop(Follower.POTION_DROP_PROBABILITY))
-                    {
-                        Potion potion = new Potion(new RectangleF
-                        {
-                            Position = ca.Bounds.Position,
-                            Size = new Size2(potionTexture.Width, potionTexture.Height)
-                        }, ca.Bounds.Position, potionTexture);
-                        entities.Add(potion);
-                        collisionComponent.Insert(potion);
-                    }
-
-                    entities.RemoveAt(i);
-                    collisionComponent.Remove(ca);
-                    i--;
-                    continue;
-                }
-                entities[i].Update(gameTime);
-            }
-
-            for (int i = 0; i < props.Count; i++)
-            {
-                if (props[i] is IDestroyable && ((IDestroyable)props[i]).Destroy)
-                {
-                    ICollisionActor ca = props[i];
-                    props.RemoveAt(i);
-                    collisionComponent.Remove(ca);
-
-                    i--;
-                    continue;
-                }
-                props[i].Update(gameTime);
-            }
-
-            for (int i = 0; i < zones.Count; i++)
-            {
-                zones[i].Update(gameTime);
-            }
-
-            if (heartCount > 0)
-            {
-                if (player.Hearts < heartCount)
-                {
-                    for (int i = decorations.Count - 1; i >= 0; i--)
-                    {
-                        if (decorations[i] is Heart)
-                        {
-                            decorations.RemoveAt(i);
-                            heartCount--;
-                            currentHeartX -= heartOffset;
-                            break;
-                        }
-                    }
-                }
-                else if (player.Hearts > heartCount)
-                {
-                    decorations.Add(new Heart(this, new Vector2(currentHeartX, currentHeartY), heartTexture));
-                    currentHeartX += heartOffset;
-                    heartCount++;
-                }
-            }
-            else
+            if(player.Hearts <= 0)
             {
                 Exit();
             }
-
-            collisionComponent.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -240,20 +163,12 @@ namespace BOIC.Code
 
             spriteBatch.Begin();
 
-            foreach (IEntity entity in entities)
-            {
-                entity.Draw(spriteBatch);
-            }
+                room.Draw(spriteBatch);
 
-            foreach (IDecoration decoration in decorations)
-            {
-                decoration.Draw(spriteBatch);
-            }
-
-            foreach (IProp prop in props)
-            {
-                prop.Draw(spriteBatch);
-            }
+                foreach (var heart in hearts)
+                {
+                    heart.Draw(spriteBatch);
+                }
 
             spriteBatch.End();
 
